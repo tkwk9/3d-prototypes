@@ -1,0 +1,44 @@
+{
+  "name": "3d-prototypes",
+  "version": "1.0.0",
+  "description": "3D Prototypes",
+  "private": true,
+  "scripts": {
+    "build": "webpack --config webpack.dev.config.js",
+    "watch": "webpack watch --config webpack.dev.config.js",
+    "dev": "wrangler pages dev ./build",
+    "deploy": "sudo wrangler pages deploy ./build"
+  },
+  "author": "tkwk9",
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/core": "^7.22.17",
+    "@babel/preset-env": "^7.22.15",
+    "babel-loader": "^9.1.3",
+    "babel-preset-solid": "^1.7.12",
+    "core-js": "^3.33.0",
+    "css-loader": "^6.8.1",
+    "favicons-webpack-plugin": "^6.0.1",
+    "file-loader": "^6.2.0",
+    "html-loader": "^4.2.0",
+    "html-webpack-plugin": "^5.5.3",
+    "path": "^0.12.7",
+    "sass": "^1.67.0",
+    "sass-loader": "^13.3.2",
+    "source-map-loader": "^4.0.1",
+    "style-loader": "^3.3.3",
+    "webpack": "^5.88.2",
+    "webpack-cli": "^5.1.4",
+    "wrangler": "^3.8.0"
+  },
+  "dependencies": {
+    "@solidjs/router": "^0.8.3",
+    "animejs": "^3.2.1",
+    "clone-deep": "^4.0.1",
+    "d3": "^7.8.5",
+    "konva": "^9.2.2",
+    "solid-js": "^1.7.12",
+    "three": "^0.158.0",
+    "topojson": "^3.0.2"
+  }
+}
