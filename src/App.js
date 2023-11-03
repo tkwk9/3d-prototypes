@@ -34,5 +34,4 @@ const App = () => (
   </Router>
 );
 
-const rootElement = document.getElementById("root");
 render(() => <App />, root);
