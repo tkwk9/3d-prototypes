@@ -7,23 +7,46 @@ const SvgTest = () => {
 
   onMount(() => {
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(
-      75,
-      window.innerWidth / window.innerHeight,
-      0.1,
-      1000
+    // const camera = new THREE.OrthographicCamera(
+    //   75,
+    //   window.innerWidth / window.innerHeight,
+    //   0.1,
+    //   1000
+    // );
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    const aspectRatio = width / height;
+
+    // Define the size of the orthographic view
+    const viewSize = 200; // Adjust as needed based on your scene's dimensions
+
+    // Create an orthographic camera
+    const camera = new THREE.OrthographicCamera(
+      (viewSize * aspectRatio) / -2, // left
+      (viewSize * aspectRatio) / 2, // right
+      viewSize / 2, // top
+      viewSize / -2, // bottom
+      1, // near
+      1000 // far
     );
+
+    // Set the camera position and look at a point (adjust as needed)
+    camera.position.set(0, 0, 200);
+    camera.lookAt(0, 0, 0);
+
     const renderer = new THREE.WebGLRenderer();
     renderer.setSize(window.innerWidth, window.innerHeight);
     container.appendChild(renderer.domElement);
 
-    const rectSize = 30;
-    const paddingSize = 10;
+    const rectSize = 300;
+    const borderRadius = 30;
+    const paddingSize = 50;
     const comb = rectSize + paddingSize;
+    const gridSize = 10;
 
     const svgString = `
-    <svg width="${comb * 100}" height="${
-      comb * 100
+    <svg width="${comb * gridSize}" height="${
+      comb * gridSize
     }" xmlns="http://www.w3.org/2000/svg">
     <!-- Padding around the entire SVG -->
     <rect width="100%" height="100%" fill="#3a3a3a" />
@@ -34,8 +57,8 @@ const SvgTest = () => {
         <feComponentTransfer in="SourceAlpha">
           <feFuncA type="table" tableValues="1 0" />
         </feComponentTransfer>
-        <feGaussianBlur stdDeviation="2" />
-        <feOffset dx="2" dy="2" result="offsetblur" />
+        <feGaussianBlur stdDeviation="${40}" />
+        <feOffset dx="${-10}" dy="${50}" result="offsetblur" />
         <feFlood flood-color="#000000" result="color" />
         <feComposite in2="offsetblur" operator="in" />
         <feComposite in2="SourceAlpha" operator="in" />
@@ -45,16 +68,16 @@ const SvgTest = () => {
         </feMerge>
       </filter>
   
-      <rect id="rounded-rect" width="${rectSize}" height="${rectSize}" rx="5" ry="5" style="fill:#9a9a9a; stroke: white; filter:url(#inner-shadow);" />
+      <rect id="rounded-rect" width="${rectSize}" height="${rectSize}" rx="${borderRadius}" ry="${borderRadius}" style="fill:#9a9a9a; stroke: white; filter:url(#inner-shadow);" />
     </defs>
   
     <g fill="none" stroke="white">
       ${Array.from(
-        { length: 100 },
+        { length: gridSize },
         (_, rowIndex) =>
           `
             ${Array.from(
-              { length: 100 },
+              { length: gridSize },
               (_, colIndex) =>
                 `<use href="#rounded-rect" x="${
                   colIndex * (rectSize + paddingSize) + paddingSize / 2
@@ -81,8 +104,8 @@ const SvgTest = () => {
         transparent: true,
       });
 
-      const planeSize = 30;
-      const gridSize = 10;
+      const planeSize = 1;
+      const gridSize = 100;
 
       for (let row = 0; row < gridSize; row++) {
         for (let col = 0; col < gridSize; col++) {
@@ -155,13 +178,18 @@ const SvgTest = () => {
       const onMouseWheel = (event) => {
         event.preventDefault();
 
-        const delta = event.wheelDelta
-          ? event.wheelDelta / 40
-          : event.deltaY
-          ? -event.deltaY / 3
-          : 0;
+        const delta = -event.deltaY / 3;
 
-        camera.position.z = Math.max(1, camera.position.z + delta * zoomSpeed);
+        // Adjust the zoom of the orthographic camera
+        camera.zoom += delta * zoomSpeed;
+
+        // Limit the zoom level if needed
+        camera.zoom = Math.max(1, camera.zoom);
+
+        // Update the camera's projection matrix
+        camera.updateProjectionMatrix();
+
+        // Request animation frame to trigger a render
         requestAnimationFrame(render);
       };
 
