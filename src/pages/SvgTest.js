@@ -43,11 +43,11 @@ const SvgTest = () => {
       
       <g fill="none" stroke="white">
         ${Array.from(
-          { length: 300 },
+          { length: 100 },
           (_, rowIndex) =>
             `<!-- Row ${rowIndex + 1} -->
             ${Array.from(
-              { length: 300 },
+              { length: 100 },
               (_, colIndex) =>
                 `<use href="#rounded-rect" x="${colIndex * 50 + 5}" y="${
                   rowIndex * 50 + 5
@@ -65,12 +65,10 @@ const SvgTest = () => {
 
     const loader = new THREE.TextureLoader();
     loader.load(svgUrl, function (texture) {
-      const material = new THREE.MeshBasicMaterial(
-        {
-          map: texture,
-          transparent: true,
-        }
-      );
+      const material = new THREE.MeshBasicMaterial({
+        map: texture,
+        transparent: true,
+      });
 
       const geometry = new THREE.PlaneGeometry(10, 10);
 
@@ -81,41 +79,39 @@ const SvgTest = () => {
       camera.position.z = 5;
 
       let isPanning = false;
-      let startPoint = { x: 0, y: 0 };
-      let endPoint = { x: 0, y: 0 };
-      let translateSpeed = 0.01;
 
       const render = () => {
         renderer.render(scene, camera);
       };
 
+      const raycaster = new THREE.Raycaster();
+      const mouse = new THREE.Vector2();
+      let selectedPoint = new THREE.Vector3();
+
       const onMouseDown = (event) => {
         isPanning = true;
-        startPoint = {
-          x: event.clientX,
-          y: event.clientY,
-        };
+        
+        mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+        mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+        
+        raycaster.setFromCamera( mouse, camera );
+        
+        raycaster.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 0, 1), 0), selectedPoint);
       };
 
       const onMouseMove = (event) => {
         if (!isPanning) return;
-
-        endPoint = {
-          x: event.clientX,
-          y: event.clientY,
-        };
-
-        const deltaX = endPoint.x - startPoint.x;
-        const deltaY = endPoint.y - startPoint.y;
-
-        camera.position.x -= deltaX * translateSpeed;
-        camera.position.y += deltaY * translateSpeed;
-
-        startPoint = {
-          x: endPoint.x,
-          y: endPoint.y,
-        };
-
+        
+        mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+        mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+        
+        raycaster.setFromCamera( mouse, camera );
+        
+        const newPoint = new THREE.Vector3();
+        raycaster.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 0, 1), 0), newPoint);
+        
+        camera.position.sub(newPoint.sub(selectedPoint));
+        
         requestAnimationFrame(render);
       };
 
@@ -138,9 +134,7 @@ const SvgTest = () => {
           ? -event.deltaY / 3
           : 0;
 
-        camera.position.z += delta * zoomSpeed;
-
-        camera.position.z = Math.min(Math.max(camera.position.z, 1), 100);
+        camera.position.z = Math.max(1, camera.position.z + delta * zoomSpeed);
         requestAnimationFrame(render);
       };
 
