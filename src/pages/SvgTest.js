@@ -21,7 +21,7 @@ const SvgTest = () => {
     const rectGridSize = 10;
 
     const planeSize = 1;
-    const planeGridSize = 1;
+    const planeGridSize = 10;
 
     const svgString = `
     <svg width="${comb * rectGridSize}" height="${
