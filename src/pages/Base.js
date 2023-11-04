@@ -32,7 +32,7 @@ const Base = () => {
     const material = new THREE.MeshStandardMaterial({
       color: "#a765a1",
       roughness: 0.7,
-      metalness: 0.0,
+      metalness: 1.0,
     });
 
     const geometry = new THREE.BoxGeometry();
