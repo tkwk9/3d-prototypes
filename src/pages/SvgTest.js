@@ -7,30 +7,23 @@ const SvgTest = () => {
 
   onMount(() => {
     const scene = new THREE.Scene();
-    // const camera = new THREE.OrthographicCamera(
-    //   75,
-    //   window.innerWidth / window.innerHeight,
-    //   0.1,
-    //   1000
-    // );
+    
+
     const width = window.innerWidth;
     const height = window.innerHeight;
     const aspectRatio = width / height;
 
-    // Define the size of the orthographic view
-    const viewSize = 200; // Adjust as needed based on your scene's dimensions
+    const viewSize = 200;
 
-    // Create an orthographic camera
     const camera = new THREE.OrthographicCamera(
-      (viewSize * aspectRatio) / -2, // left
-      (viewSize * aspectRatio) / 2, // right
-      viewSize / 2, // top
-      viewSize / -2, // bottom
-      1, // near
-      1000 // far
+      (viewSize * aspectRatio) / -2,
+      (viewSize * aspectRatio) / 2,
+      viewSize / 2,
+      viewSize / -2,
+      1,
+      1000
     );
 
-    // Set the camera position and look at a point (adjust as needed)
     camera.position.set(0, 0, 200);
     camera.lookAt(0, 0, 0);
 
@@ -44,12 +37,17 @@ const SvgTest = () => {
     const comb = rectSize + paddingSize;
     const gridSize = 10;
 
+    const backgroundColor = "#656565";
+    const rectColor = "#89c1cd";
+
+    scene.background = new THREE.Color(`${backgroundColor}`);
+
     const svgString = `
     <svg width="${comb * gridSize}" height="${
       comb * gridSize
     }" xmlns="http://www.w3.org/2000/svg">
     <!-- Padding around the entire SVG -->
-    <rect width="100%" height="100%" fill="#3a3a3a" />
+    <rect width="100%" height="100%" fill="${backgroundColor}" />
   
     <defs>
       <!-- Inner shadow filter definition -->
@@ -58,7 +56,7 @@ const SvgTest = () => {
           <feFuncA type="table" tableValues="1 0" />
         </feComponentTransfer>
         <feGaussianBlur stdDeviation="${40}" />
-        <feOffset dx="${-10}" dy="${50}" result="offsetblur" />
+        <feOffset dx="${-20}" dy="${50}" result="offsetblur" />
         <feFlood flood-color="#000000" result="color" />
         <feComposite in2="offsetblur" operator="in" />
         <feComposite in2="SourceAlpha" operator="in" />
@@ -67,8 +65,20 @@ const SvgTest = () => {
           <feMergeNode />
         </feMerge>
       </filter>
+
+      <filter id="pop-out-effect" x="-50%" y="-50%" width="200%" height="200%">
+        <!-- Apply a feConvolveMatrix filter to create a beveled edge -->
+        <feConvolveMatrix
+          in="SourceGraphic"
+          result="convolved"
+          order="3"
+          kernelMatrix="0 -1 0 -1 5 -1 0 -1 0"
+        />
+        <!-- Apply a feComposite filter to combine the original and beveled shape -->
+        <feComposite in="convolved" in2="SourceGraphic" operator="arithmetic" k1="0" k2="1" k3="1" k4="0" />
+      </filter>
   
-      <rect id="rounded-rect" width="${rectSize}" height="${rectSize}" rx="${borderRadius}" ry="${borderRadius}" style="fill:#9a9a9a; stroke: white; filter:url(#inner-shadow);" />
+      <rect id="rounded-rect" width="${rectSize}" height="${rectSize}" rx="${borderRadius}" ry="${borderRadius}" style="fill:${rectColor}; stroke: white; filter:url(#inner-shadow);" />
     </defs>
   
     <g fill="none" stroke="white">
@@ -99,6 +109,10 @@ const SvgTest = () => {
 
     const loader = new THREE.TextureLoader();
     loader.load(svgUrl, function (texture) {
+      texture.magFilter = THREE.LinearFilter;
+      texture.minFilter = THREE.LinearMipMapLinearFilter;
+      renderer.outputEncoding = THREE.sRGBEncoding;
+      texture.encoding = THREE.sRGBEncoding;
       const material = new THREE.MeshBasicMaterial({
         map: texture,
         transparent: true,
@@ -121,6 +135,8 @@ const SvgTest = () => {
       }
 
       camera.position.z = 5;
+      camera.zoom = 70;
+      camera.updateProjectionMatrix();
 
       let isPanning = false;
 
@@ -180,20 +196,16 @@ const SvgTest = () => {
 
         const delta = -event.deltaY / 3;
 
-        // Adjust the zoom of the orthographic camera
         camera.zoom += delta * zoomSpeed;
-
-        // Limit the zoom level if needed
         camera.zoom = Math.max(1, camera.zoom);
 
-        // Update the camera's projection matrix
         camera.updateProjectionMatrix();
 
-        // Request animation frame to trigger a render
         requestAnimationFrame(render);
       };
 
       container.addEventListener("wheel", onMouseWheel);
+      
 
       render();
     });
