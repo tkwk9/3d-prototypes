@@ -7,13 +7,21 @@ const PixiDemo = () => {
   let container;
 
   onMount(() => {
-    let app = new PIXI.Application({ width: 256, height: 256 });
+    let app = new PIXI.Application({
+      width: 256,
+      height: 256,
+      resolution: window.devicePixelRatio || 1,
+      autoDensity: true,
+    });
     container.appendChild(app.view);
+
+    const originalColor = 0x5bba6f;
+    const hoverColor = 0xffbd01;
+    const clickColor = 0xff3333;
 
     let button = new PIXI.Graphics();
     button.lineStyle(4, 0xffffff, 1);
-
-    button.beginFill(0x5bba6f);
+    button.beginFill(originalColor);
     button.drawRoundedRect(0, 0, 150, 50, 10);
     button.endFill();
 
@@ -24,54 +32,37 @@ const PixiDemo = () => {
     button.buttonMode = true;
     button.cursor = "pointer";
 
-    function animateColor(fromColor, toColor, duration, onUpdate) {
-      let currentTime = 0;
-      const tick = (delta) => {
-        currentTime += delta;
-        const progress = Math.min(currentTime / duration, 1);
-        const currentColor = PIXI.utils.rgb2hex([
-          fromColor[0] + (toColor[0] - fromColor[0]) * progress,
-          fromColor[1] + (toColor[1] - fromColor[1]) * progress,
-          fromColor[2] + (toColor[2] - fromColor[2]) * progress,
-        ]);
-        onUpdate(currentColor);
-        if (progress >= 1) {
-          app.ticker.remove(tick);
-        }
-      };
-      app.ticker.add(tick);
-    }
-
-    button.on("mouseover", function onMouseOver() {
-      animateColor(
-        [0x5b / 0xff, 0xba / 0xff, 0x6f / 0xff],
-        [0xff / 0xff, 0xbd / 0xff, 0x01 / 0xff],
-        30,
-        (color) => {
-          button.clear();
-          button.lineStyle(4, 0xffffff, 1);
-          button.beginFill(color);
-          button.drawRoundedRect(0, 0, 150, 50, 10);
-          button.endFill();
-        }
-      );
+    button.on("mouseover", () => {
+      button.tint = hoverColor;
     });
 
-    button.on("mouseout", function onMouseOut() {
-      animateColor(
-        [0xff / 0xff, 0xbd / 0xff, 0x01 / 0xff],
-        [0x5b / 0xff, 0xba / 0xff, 0x6f / 0xff],
-        30,
-        (color) => {
-          button.clear();
-          button.lineStyle(4, 0xffffff, 1);
-          button.beginFill(color);
-          button.drawRoundedRect(0, 0, 150, 50, 10);
-          button.endFill();
-        }
-      );
+    button.on("mouseout", () => {
+      button.tint = 0xffffff;
     });
 
+    button.on("pointerdown", () => {
+      button.tint = clickColor;
+    });
+
+    button.on("pointerup", () => {
+      button.tint = hoverColor;
+    });
+    button.on("pointerupoutside", () => {
+      button.tint = 0xffffff;
+    });
+
+    const style = new PIXI.TextStyle({
+      fontFamily: "Arial",
+      fontSize: 24,
+      fill: "#ffffff",
+      align: "center",
+    });
+    let buttonText = new PIXI.Text("clickme", style);
+    buttonText.x = button.width / 2;
+    buttonText.y = button.height / 2;
+    buttonText.anchor.set(0.5);
+
+    button.addChild(buttonText);
     app.stage.addChild(button);
 
     app.start();
