@@ -22,13 +22,12 @@ const SvgTest = () => {
 
     const planeSize = 1;
     const planeGridSize = 10;
+    let initTime = Date.now();
 
     const svgString = `
     <svg width="${comb * rectGridSize}" height="${
       comb * rectGridSize
     }" xmlns="http://www.w3.org/2000/svg">
-      <rect width="100%" height="100%" fill="${backgroundColor}" />
-
       <defs>
         <filter id="inner-shadow" x="-50%" y="-50%" width="200%" height="200%">
           <feComponentTransfer in="SourceAlpha">
@@ -43,16 +42,6 @@ const SvgTest = () => {
             <feMergeNode in="SourceGraphic" />
             <feMergeNode />
           </feMerge>
-        </filter>
-
-        <filter id="pop-out-effect" x="-50%" y="-50%" width="200%" height="200%">
-          <feConvolveMatrix
-            in="SourceGraphic"
-            result="convolved"
-            order="3"
-            kernelMatrix="0 -1 0 -1 5 -1 0 -1 0"
-          />
-          <feComposite in="convolved" in2="SourceGraphic" operator="arithmetic" k1="0" k2="1" k3="1" k4="0" />
         </filter>
 
         <rect id="rounded-rect" width="${rectSize}" height="${rectSize}" rx="${borderRadius}" ry="${borderRadius}" fill="${rectColor}" stroke="#d4d4d4" stroke-width="10" style="filter:url(#inner-shadow);" />
@@ -110,6 +99,7 @@ const SvgTest = () => {
     window.addEventListener("resize", updateRendererSize);
 
     const loader = new THREE.TextureLoader();
+    console.log(Date.now() - initTime);
     loader.load(svgUrl, function (texture) {
       texture.magFilter = THREE.LinearFilter;
       texture.minFilter = THREE.LinearMipMapLinearFilter;
@@ -135,9 +125,7 @@ const SvgTest = () => {
 
       let isPanning = false;
 
-      const render = () => {
-        renderer.render(scene, camera);
-      };
+      
 
       const raycaster = new THREE.Raycaster();
       const mouse = new THREE.Vector2();
@@ -172,8 +160,6 @@ const SvgTest = () => {
         );
 
         camera.position.sub(newPoint.sub(selectedPoint));
-
-        requestAnimationFrame(render);
       };
 
       const onMouseUp = () => {
@@ -192,13 +178,17 @@ const SvgTest = () => {
         const delta = -event.deltaY / 3;
         camera.zoom += delta * zoomSpeed;
         camera.zoom = Math.max(1, camera.zoom);
-        camera.updateProjectionMatrix();
-        requestAnimationFrame(render);
+        camera.updateProjectionMatrix()
       };
 
       container.addEventListener("wheel", onMouseWheel);
+      console.log(Date.now() - initTime);
 
-      render();
+      const render = () => {
+        requestAnimationFrame(render);
+        renderer.render(scene, camera);
+      };
+      requestAnimationFrame(render);
     });
   });
 
