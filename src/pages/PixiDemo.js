@@ -7,63 +7,84 @@ const PixiDemo = () => {
   let container;
 
   onMount(() => {
+    const cols = 30;
+    const rows = 30;
+    const containerWidth = container.clientWidth;
+    const containerHeight = container.clientHeight;
+    const paddingPercentage = 0.05;
+    const buttonWidth = (containerWidth / cols) * (1 - paddingPercentage * 2);
+    const buttonHeight = (containerHeight / rows) * (1 - paddingPercentage * 2);
+    const paddingWidth = (containerWidth / cols) * paddingPercentage;
+    const paddingHeight = (containerHeight / rows) * paddingPercentage;
+
     let app = new PIXI.Application({
-      width: 256,
-      height: 256,
+      width: containerWidth,
+      height: containerHeight,
       resolution: window.devicePixelRatio || 1,
       autoDensity: true,
+      backgroundColor: "#7a7a7a",
     });
     container.appendChild(app.view);
 
-    const originalColor = 0x5bba6f;
-    const hoverColor = 0xffbd01;
-    const clickColor = 0xff3333;
+    const originalColor = "#42987d";
+    const hoverColor = "#346052";
+    const clickColor = "#272e2c";
 
-    let button = new PIXI.Graphics();
-    button.lineStyle(4, 0xffffff, 1);
-    button.beginFill(originalColor);
-    button.drawRoundedRect(0, 0, 150, 50, 10);
-    button.endFill();
+    for (let i = 0; i < rows; i++) {
+      for (let j = 0; j < cols; j++) {
+        let button = new PIXI.Graphics();
+        button.lineStyle(1, "#6e988b", 1);
+        button.beginFill(originalColor);
+        button.drawRoundedRect(0, 0, buttonWidth, buttonHeight, 5);
+        button.endFill();
 
-    button.x = (app.screen.width - 150) / 2;
-    button.y = (app.screen.height - 50) / 2;
+        button.x = j * (buttonWidth + paddingWidth * 2) + paddingWidth;
+        button.y = i * (buttonHeight + paddingHeight * 2) + paddingHeight;
 
-    button.interactive = true;
-    button.buttonMode = true;
-    button.cursor = "pointer";
+        button.interactive = true;
+        button.buttonMode = true;
+        button.cursor = "pointer";
 
-    button.on("mouseover", () => {
-      button.tint = hoverColor;
-    });
+        button.on("mouseover", () => {
+          button.clear();
+          button.lineStyle(1, "#6e988b", 1);
+          button.beginFill(hoverColor);
+          button.drawRoundedRect(0, 0, buttonWidth, buttonHeight, 5);
+          button.endFill();
+        });
+        button.on("mouseout", () => {
+          console.log("out");
+          button.clear();
+          button.lineStyle(1, "#6e988b", 1);
+          button.beginFill(originalColor);
+          button.drawRoundedRect(0, 0, buttonWidth, buttonHeight, 5);
+          button.endFill();
+        });
+        button.on("pointerdown", () => {
+          button.clear();
+          button.lineStyle(1, "#6e988b", 1);
+          button.beginFill(clickColor);
+          button.drawRoundedRect(0, 0, buttonWidth, buttonHeight, 5);
+          button.endFill();
+        });
+        button.on("pointerup", () => {
+          button.clear();
+          button.lineStyle(1, "#6e988b", 1);
+          button.beginFill(hoverColor);
+          button.drawRoundedRect(0, 0, buttonWidth, buttonHeight, 5);
+          button.endFill();
+        });
+        button.on("pointerupoutside", () => {
+          button.clear();
+          button.lineStyle(1, "#6e988b", 1);
+          button.beginFill(originalColor);
+          button.drawRoundedRect(0, 0, buttonWidth, buttonHeight, 5);
+          button.endFill();
+        });
 
-    button.on("mouseout", () => {
-      button.tint = 0xffffff;
-    });
-
-    button.on("pointerdown", () => {
-      button.tint = clickColor;
-    });
-
-    button.on("pointerup", () => {
-      button.tint = hoverColor;
-    });
-    button.on("pointerupoutside", () => {
-      button.tint = 0xffffff;
-    });
-
-    const style = new PIXI.TextStyle({
-      fontFamily: "Arial",
-      fontSize: 24,
-      fill: "#ffffff",
-      align: "center",
-    });
-    let buttonText = new PIXI.Text("clickme", style);
-    buttonText.x = button.width / 2;
-    buttonText.y = button.height / 2;
-    buttonText.anchor.set(0.5);
-
-    button.addChild(buttonText);
-    app.stage.addChild(button);
+        app.stage.addChild(button);
+      }
+    }
 
     app.start();
   });
